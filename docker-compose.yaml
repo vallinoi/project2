@@ -61,8 +61,12 @@ services:
       - "8003:8003"
     environment:
       DATABASE_URL: postgresql+psycopg2://user:pass@inventory-db:5432/inventory
+      RABBITMQ_HOST: rabbitmq
     depends_on:
-      - inventory-db
+      inventory-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   order-db:
     image: postgres:16
