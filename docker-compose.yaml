@@ -27,6 +27,25 @@ services:
       DATABASE_URL: postgresql+psycopg2://user:pass@merchant-db:5432/merchants
     depends_on:
       - merchant-db
+      
+  buyer-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: buyers
+    volumes:
+      - buyer-data:/var/lib/postgresql/data
 
+  buyer-service:
+    build: ./BuyerService
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:pass@buyer-db:5432/buyers
+    depends_on:
+      - buyer-db
+  
 volumes:
   merchant-data:
+  buyer-data:
