@@ -6,8 +6,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.exc import OperationalError
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@merchant-db:5432/merchants")
-
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://user:pass@merchant-db:5432/merchants")
 # DB container may not be ready yet, so retry
 engine = None
 for _ in range(15):
@@ -34,7 +33,7 @@ class Merchant(Base):
 
 Base.metadata.create_all(engine)
 
-APP = FastAPI()
+app = FastAPI()
 
 class MerchantIn(BaseModel):
     name: str
