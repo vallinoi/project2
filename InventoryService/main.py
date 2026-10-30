@@ -11,7 +11,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://user:pass@invent
 engine = None
 for _ in range(15):
     try:
-        engine = create_engine(DATABASE_URL)
+        engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         engine.connect().close()
         break
     except OperationalError:

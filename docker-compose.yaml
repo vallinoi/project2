@@ -88,8 +88,29 @@ services:
       - buyer-service
       - inventory-service
   
+  payment-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: payments
+    volumes:
+      - payment-data:/var/lib/postgresql/data
+
+  payment-service:
+    build: ./PaymentService
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:pass@payment-db:5432/payments
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      payment-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   merchant-data:
   buyer-data:
   inventory-data:
   order-data:
+  payment-data:

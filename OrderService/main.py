@@ -1,5 +1,7 @@
 import os
 import time
+import json
+import pika
 from typing import Optional
 
 import httpx
@@ -14,10 +16,27 @@ MERCHANT_URL = os.getenv("MERCHANT_URL", "http://merchant-service:8001")
 BUYER_URL = os.getenv("BUYER_URL", "http://buyer-service:8002")
 INVENTORY_URL = os.getenv("INVENTORY_URL", "http://inventory-service:8003")
 
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
+EXCHANGE = "events"
+
+
+def publish_event(routing_key: str, body: dict):
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
+    channel = connection.channel()
+    channel.exchange_declare(exchange=EXCHANGE, exchange_type="topic", durable=True)
+    channel.basic_publish(
+        exchange=EXCHANGE,
+        routing_key=routing_key,
+        body=json.dumps(body),
+        properties=pika.BasicProperties(delivery_mode=2, content_type="application/json"),
+    )
+    connection.close()
+
+
 engine = None
 for _ in range(15):
     try:
-        engine = create_engine(DATABASE_URL)
+        engine = create_engine(DATABASE_URL, pool_pre_ping=True)
         engine.connect().close()
         break
     except OperationalError:
@@ -71,6 +90,7 @@ def create_order(o: OrderIn):
     r = httpx.get(f"{BUYER_URL}/buyers/{o.buyerId}", timeout=5)
     if r.status_code == 404:
         raise HTTPException(status_code=400, detail="Buyer does not exist")
+    buyer = r.json()
 
     # 3. product
     r = httpx.get(f"{INVENTORY_URL}/products/{o.productId}", timeout=5)
@@ -108,8 +128,20 @@ def create_order(o: OrderIn):
         db.add(order)
         db.commit()
         db.refresh(order)
-        # TODO later: publish Order-Created event here
-        return order.id
+        order_id = order.id
+
+    publish_event("order.created", {
+        "orderId": order_id,
+        "productId": o.productId,
+        "productName": product["productName"],
+        "merchantId": o.merchantId,
+        "merchantEmail": merchant["email"],
+        "buyerId": o.buyerId,
+        "buyerEmail": buyer["email"],
+        "totalPrice": total,
+        "creditCard": o.creditCard.model_dump(),
+    })
+    return order_id
 
 
 @app.get("/orders/{order_id}")
