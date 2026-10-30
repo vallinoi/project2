@@ -1,0 +1,12 @@
+{
+  "productId": 2,
+  "merchantId": 1,
+  "buyerId": 1,
+  "creditCard": {
+    "cardNumber": "4242424242424242",
+    "expirationMonth": 8,
+    "expirationYear": 2028,
+    "cvc": 123
+  },
+  "discount": 0.2
+}

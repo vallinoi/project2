@@ -63,8 +63,33 @@ services:
       DATABASE_URL: postgresql+psycopg2://user:pass@inventory-db:5432/inventory
     depends_on:
       - inventory-db
+
+  order-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: orders
+    volumes:
+      - order-data:/var/lib/postgresql/data
+
+  order-service:
+    build: ./OrderService
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://user:pass@order-db:5432/orders
+      MERCHANT_URL: http://merchant-service:8001
+      BUYER_URL: http://buyer-service:8002
+      INVENTORY_URL: http://inventory-service:8003
+    depends_on:
+      - order-db
+      - merchant-service
+      - buyer-service
+      - inventory-service
   
 volumes:
   merchant-data:
   buyer-data:
   inventory-data:
+  order-data:
