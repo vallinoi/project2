@@ -43,10 +43,11 @@ class BuyerIn(BaseModel):
 @app.post("/buyers", status_code = 201)
 def create_buyer(b:BuyerIn):
     with Session() as db:
-        buyer = Buyer(name=b.name, 
+        buyer = Buyer(
+                    name=b.name, 
                     ssn=b.ssn, 
                     email=b.email, 
-                    phone_number=b.phoneNumber)
+                    phone_number=b.phoneNumber,)
         db.add(buyer)
         db.commit()
         db.refresh(buyer)
