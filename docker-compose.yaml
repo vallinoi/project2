@@ -111,6 +111,16 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_healthy
+        
+    EmailService:
+    build: ./EmailService
+    env_file:
+      - ./EmailService/.env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   merchant-data:
