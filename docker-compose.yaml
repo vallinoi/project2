@@ -112,8 +112,9 @@ services:
       rabbitmq:
         condition: service_healthy
         
-    EmailService:
+  EmailService:
     build: ./EmailService
+    image: project2-emailservice
     env_file:
       - ./EmailService/.env
     environment:
