@@ -1,7 +1,7 @@
 {
-  "productId": 2,
-  "merchantId": 1,
-  "buyerId": 1,
+  "productId": 4,
+  "merchantId": 2,
+  "buyerId": 2,
   "creditCard": {
     "cardNumber": "4242424242424242",
     "expirationMonth": 8,
